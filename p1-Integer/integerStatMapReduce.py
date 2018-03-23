@@ -10,15 +10,16 @@ Created on Wed Mar 21 19:52:30 2018
 # problem 1 integer:
 
 
-# The largest integer
 
 import re
 
 from mrjob.job import MRJob
 from mrjob.step import MRStep
 
-
 #WORD_RE = re.compile(r"[\w']+")
+
+
+#(a) The largest integer
 
 class MRInteger(MRJob):
 
@@ -39,6 +40,8 @@ class MRInteger(MRJob):
         #yield key, values
 
 
+
+#(b) The average of all the integers
 class MRAverage(MRJob):
 
     def steps(self):
@@ -53,16 +56,15 @@ class MRAverage(MRJob):
     def mapper_get_average(self, _, line):
         
         for inte in line.split():
-            yield (1, inte.lower())
+            yield 1, (1, int(inte.lower()))
         #yield "integer", len(line.split())
     
     def combiner_get_average(self, cnt, Integer):
-        yield sum(cnt), sum(Integer)             # 
-        #yield key, values
+        yield cnt, sum(Integer[0])             # 
 
     def reducer_get_average(self, cnt, sumInteger):
-        yield cnt, sumInteger           # 
-        #yield key, values
+        yield cnt, sum(sumInteger)           # 
+        #yield 
         
 if __name__ == '__main__':
     #MRInteger.run()
