@@ -10,9 +10,6 @@ Created on Wed Mar 21 19:52:30 2018
 # problem 1 integer:
 
 
-
-import re
-
 from mrjob.job import MRJob
 from mrjob.step import MRStep
 
@@ -33,13 +30,12 @@ class MRInteger(MRJob):
     def mapper_get_largest(self, _, line):
         
         for inte in line.split():
-            yield (1, int(inte.lower()))
+            yield 1, int(inte.strip())
         #yield "integer", len(line.split())
     
     def reducer_get_largest(self, key, values):
-        yield key, (max(values))              # max(values) indicates the largest integer
+        yield "the largest integer: ", (max(values))              # max(values) indicates the largest integer
         #yield key, values
-
 
 
 #(b) The average of all the integers
@@ -56,7 +52,7 @@ class MRAverage(MRJob):
     def mapper_get_average(self, _, line):
         
         for inte in line.split():
-            yield 1, int(inte.lower())
+            yield 1, int(inte.strip())
         #yield "integer", len(line.split())
     
     def reducer_get_average(self, key, Integer):
@@ -64,7 +60,7 @@ class MRAverage(MRJob):
         for i in Integer:
             cnt += 1          # sum of count
             v += i            # sum of integer
-        yield key, v/cnt      # 
+        yield "average of these integers :", v/cnt      # 
         #yield 
 
 #(c) The same set of integers, but with each integer appearing only once
@@ -81,7 +77,7 @@ class MRSameInteger(MRJob):
     def mapper_get_SameInteger(self, _, line):
         
         for inte in line.split():
-            yield int(inte.lower()), 1
+            yield int(inte.strip()), 1
         #yield "integer", len(line.split())
     
 
@@ -96,34 +92,47 @@ class MRCountDistinct(MRJob):
     def steps(self):
         return [
             MRStep(mapper=self.mapper_get_countDistinct,
-                   reducer=self.reducer_get_countDistinct), 
-            MRStep(mapper=self.mapper_get_keyReverse,
-                   reducer=self.reducer_get_final_countDistinct)
+                   reducer=self.reducer_get_countDistinct),
+           MRStep(reducer=self.reducer_get_final_countDistinct)
             ]
-
+    '''
     def mapper_get_countDistinct(self, _, line):
         
         for inte in line.split():
-            yield int(inte.lower()), 1
+            yield 1, int(inte.strip())
+        #yield "integer", len(line.split())
+    
+    def reducer_get_countDistinct(self, key, values):
+        yield key, sum(values)              # max(values) indicates the largest integer
+        #yield key, values
+
+    '''
+    def mapper_get_countDistinct(self, _, line):
+        
+        for inte in line.split():
+            yield int(inte.strip()), 1
         #yield "integer", len(line.split())
     
 
     def reducer_get_countDistinct(self, key, value):
-        yield value, key     # only appear once
-        
+        yield min(value), key     # only appear once
 
-    def mapper_get_keyReverse(self, key, value):
-        yield key, value
+    #def mapper_get_keyReverse(self, key, value):
+    #    yield key, value
         #yield "integer", len(line.split())
         
     def reducer_get_final_countDistinct(self, key, value):
         cnt = 0
         for i in value:
-            i += 1
-        yield key, cnt        # number of distinct integer
+            cnt += 1
+        yield "number of distinct integer: ", cnt        # number of distinct integer
         
 if __name__ == '__main__':
-    # MRInteger.run()
+    # 1. (a)
+     MRInteger.run()
+    # 1. (b)
     # MRAverage.run()
+    
+    # 1. (c)
     # MRSameInteger.run()
-    MRCountDistinct.run()
+    #MRCountDistinct.run()
