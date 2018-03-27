@@ -24,18 +24,32 @@ class MRNumberNode(MRJob):
             MRStep(reducer=self.reducer_get_final_numberNode)
             ]
 
-    def mapper_get_largest(self, _, line):
-        
-        for inte in line.split():
-            yield inte.strip('\t')[0], 1
-            yield inte.strip('\t')[1], 1
+    def mapper_get_numberNode(self, _, line):
+        lines = line.strip().split('\t')
+        #print ('linessssssss: ', line)  
+        #for ids in lines:
+        try:
+            srcId = int(lines[0])
+            dstId = int(lines[1])
+        except:
+            #print("skipping line with value", lines)
+            pass
+        else:
+            yield srcId, 1
+            yield dstId, 1
 
         #yield "integer", len(line.split())
     
     def reducer_get_numberNode(self, key, values):
-        yield values, key
+        yield 1, key
     
     def reducer_get_final_numberNode(self, key, values):
-        yield "number of nodes: ", (sum(values))              # max(values) indicates the largest integer
-        #yield key, values
+        cnt = 0
+        for i in values:
+            cnt += 1
+        yield "number of nodes: ", cnt              # max(values) indicates the largest integer
 
+
+if __name__ == '__main__':
+    # 2. Number of nodes in the graph 
+     MRNumberNode.run()
