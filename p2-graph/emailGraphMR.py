@@ -208,27 +208,27 @@ class MRTwohops(MRJob):
         inDegrees = list(degree)[0]
         outDegrees = list(degree)[1]
  
-        for i in inDegrees:
-            for j in outDegrees:
-                #k = (i, j)
+        for src in inDegrees:
+            for dst in outDegrees:
                 cnt = 1
-                yield i, j             # two hops here
+                yield src, dst             # two hops here
         yield key, -1             # -1 intialize all nodes with two hops number as 0, meaning no two hops initially
     
     def reducer_get_twoHopsSecond(self, key, dst):
         # get avearge of nodes in two hops
+        '''
         if list(dst)[0] == -1:
             yield 1, 0
-        else:
+        if list(dst)[0] != -1:
             yield 1, len(list(dst))
-        
-        #yield key[0], key[1]
-        
-    def reducer_get_twoHopsThird(self, key, dst):
-        #if list[dst][0] =
-        yield key, list(dst)
+        '''
+        cnt = 0
+        for dstId in list(dst):
+            if dstId != -1:
+                cnt += 1
+        yield 1, cnt                # get all nodes with two hops together with same key 1
     
-    def reducer_get_twoHopsFourth(self, key, values):
+    def reducer_get_twoHopsThird(self, key, values):
         # get mean 
         lst = list(values)
         sortedValues = sorted(lst)
