@@ -60,7 +60,7 @@ class MRAverageMedianInDegree(MRJob):
             MRStep(mapper=self.mapper_get_InputInDegree,
                    reducer=self.reducer_get_eachInDegree),  
             MRStep(mapper=self.mapper_get_averageInDegree,
-                   reducer=self.reducer_get_averageInDegree), 
+                   reducer=self.reducer_get_averageInDegree) 
             ]
 
     def mapper_get_InputInDegree(self, _, line):
@@ -115,7 +115,7 @@ class MRAverageMedianOutDegree(MRJob):
             MRStep(mapper=self.mapper_get_InputOutdegree,
                    reducer=self.reducer_get_eachOutdegree),  
             MRStep(mapper=self.mapper_get_averageOutdegree,
-                   reducer=self.reducer_get_averageOutdegree), 
+                   reducer=self.reducer_get_averageOutdegree)
             ]
 
     def mapper_get_InputOutdegree(self, _, line):
@@ -173,8 +173,7 @@ class MRTwohops(MRJob):
                    reducer=self.reducer_get_twoHopsFirst),  
             MRStep(mapper=self.mapper_get_twoHopsSecond,
                   reducer=self.reducer_get_twoHopsSecond), 
-            MRStep(reducer=self.reducer_get_twoHopsThird),
-            #MRStep(reducer=self.reducer_get_twoHopsFourth), 
+            MRStep(reducer=self.reducer_get_twoHopsThird)
             ]
 
     def mapper_get_twoHopsFirst(self, _, line):
@@ -204,15 +203,13 @@ class MRTwohops(MRJob):
         
     def mapper_get_twoHopsSecond(self, key, degree):     
         #get two hops
-        k = 0
         inDegrees = list(degree)[0]
         outDegrees = list(degree)[1]
  
         for src in inDegrees:
             for dst in outDegrees:
-                cnt = 1
                 yield src, dst             # two hops here
-        yield key, -1             # -1 intialize all nodes with two hops number as 0, meaning no two hops initially
+        yield key, -1             # including other nodes; -1 indicates intializing all nodes with two hops number as 0, meaning no two hops initially
     
     def reducer_get_twoHopsSecond(self, key, dst):
         # get avearge of nodes in two hops
@@ -233,7 +230,6 @@ class MRTwohops(MRJob):
         lst = list(values)
         sortedValues = sorted(lst)
         yield "average of number of nodes with two hops :", float(sum(lst))/float(len(lst))      # 
-        
         
         # get median 
         medianTwoHops = 0
@@ -256,7 +252,7 @@ class MRNumberNodeLowerBound(MRJob):
             MRStep(mapper=self.mapper_get_numberNodeLowerBound,
                    reducer=self.reducer_get_NumberNodeLowerBound),  
             MRStep(mapper=self.mapper_get_NumberNodeLowerBound_final,
-                   reducer=self.reducer_get_NumberNodeLowerBound_final), 
+                   reducer=self.reducer_get_NumberNodeLowerBound_final)
             ]
 
     def mapper_get_numberNodeLowerBound(self, _, line):
@@ -287,14 +283,14 @@ class MRNumberNodeLowerBound(MRJob):
 
 if __name__ == '__main__':
      # 2. Number of nodes in the graph 
-     #MRNumberNode.run()
+     MRNumberNode.run()
      
      # Average (and median) indegree and out degree [10]
-     #MRAverageMedianInDegree.run()
-     #MRAverageMedianOutDegree.run()
+     MRAverageMedianInDegree.run()
+     MRAverageMedianOutDegree.run()
      
      #• Average (and median) number of nodes reachable in two hops [15]
      MRTwohops.run()
      
      # • Number of nodes with indegree > 100 [10]
-     #MRNumberNodeLowerBound.run()
+     MRNumberNodeLowerBound.run()

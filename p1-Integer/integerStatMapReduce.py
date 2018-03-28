@@ -34,7 +34,7 @@ class MRInteger(MRJob):
         #yield "integer", len(line.split())
     
     def reducer_get_largest(self, key, values):
-        yield "the largest integer: ", (max(values))              # max(values) indicates the largest integer
+        yield "(a) the largest integer: ", (max(values))              # max(values) indicates the largest integer
         #yield key, values
 
 
@@ -60,7 +60,7 @@ class MRAverage(MRJob):
         for i in Integer:
             cnt += 1          # sum of count
             v += i            # sum of integer
-        yield "average of these integers :", v/cnt      # 
+        yield "(b) average of these integers :", v/cnt      # 
         #yield 
 
 #(c) The same set of integers, but with each integer appearing only once
@@ -125,14 +125,18 @@ class MRCountDistinct(MRJob):
         cnt = 0
         for i in value:
             cnt += 1
-        yield "number of distinct integer: ", cnt        # number of distinct integer
+        yield "(d) number of distinct integer: ", cnt        # number of distinct integer
         
 if __name__ == '__main__':
-    # 1. (a)
-     MRInteger.run()
-    # 1. (b)
-    # MRAverage.run()
     
-    # 1. (c)
-    # MRSameInteger.run()
-    #MRCountDistinct.run()
+    # 1. (a) The largest integer
+    MRInteger.run()
+     
+    # 1. (b) The average of all the integers
+    MRAverage.run()
+    
+    # 1. (c) The same set of integers, but with each integer appearing only once
+    MRSameInteger.run()
+     
+    #  1. (d) The count of the number of distinct integers in the input
+    MRCountDistinct.run()
