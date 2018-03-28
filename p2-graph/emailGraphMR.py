@@ -163,7 +163,7 @@ class MRAverageMedianOutDegree(MRJob):
         yield "median of outdegree :", medianOutdegree 
 
 
-# • Average (and median) number of nodes reachable in two hops [15]
+# • Average (and median) number of nodes reachable in two hops
 
 class MRTwohops(MRJob):
 
@@ -171,8 +171,10 @@ class MRTwohops(MRJob):
         return [
             MRStep(mapper=self.mapper_get_twoHopsFirst,
                    reducer=self.reducer_get_twoHopsFirst),  
-            #MRStep(mapper=self.mapper_get_twoHopsSecond,
-            #       reducer=self.reducer_get_twoHopsSecond), 
+            MRStep(mapper=self.mapper_get_twoHopsSecond,
+                  reducer=self.reducer_get_twoHopsSecond), 
+            MRStep(reducer=self.reducer_get_twoHopsThird),
+            #MRStep(reducer=self.reducer_get_twoHopsFourth), 
             ]
 
     def mapper_get_twoHopsFirst(self, _, line):
@@ -195,21 +197,93 @@ class MRTwohops(MRJob):
         
         inDegrees = []
         outDegrees = []
-        inDegrees += list(values)[0]
-        outDegrees = list(values)[1]
+        for v in values:
+            inDegrees += v[0]
+            outDegrees += v[1]
         yield key, (inDegrees, outDegrees)
         
-    def mapper_get_twoHopsSecond(self, key, cnt):
-        yield key, cnt
+    def mapper_get_twoHopsSecond(self, key, degree):     
+        #get two hops
+        k = 0
+        inDegrees = list(degree)[0]
+        outDegrees = list(degree)[1]
+ 
+        for i in inDegrees:
+            for j in outDegrees:
+                #k = (i, j)
+                cnt = 1
+                yield i, j             # two hops here
+        yield key, -1             # -1 intialize all nodes with two hops number as 0, meaning no two hops initially
     
-    def reducer_get_twoHopsSecond(self, key, values):
+    def reducer_get_twoHopsSecond(self, key, dst):
         # get avearge of nodes in two hops
-       
-        yield key, values 
+        if list(dst)[0] == -1:
+            yield 1, 0
+        else:
+            yield 1, len(list(dst))
+        
+        #yield key[0], key[1]
+        
+    def reducer_get_twoHopsThird(self, key, dst):
+        #if list[dst][0] =
+        yield key, list(dst)
+    
+    def reducer_get_twoHopsFourth(self, key, values):
+        # get mean 
+        lst = list(values)
+        sortedValues = sorted(lst)
+        yield "average of number of nodes with two hops :", float(sum(lst))/float(len(lst))      # 
+        
+        
+        # get median 
+        medianTwoHops = 0
+        index = (len(sortedValues) -1) // 2
+        #print ("sortedValues: ", sortedValues, index)
+        
+        if len(sortedValues) % 2 == 0:
+            medianTwoHops =  (sortedValues[index] + sortedValues[index+1])/2.0
+        else:
+            medianTwoHops = sortedValues[index]
+            
+        yield "median of number of nodes with two hops :", medianTwoHops
+   
 
+# • Number of nodes with indegree > 100 
+class MRNumberNodeLowerBound(MRJob):
 
+    def steps(self):
+        return [
+            MRStep(mapper=self.mapper_get_numberNodeLowerBound,
+                   reducer=self.reducer_get_NumberNodeLowerBound),  
+            MRStep(mapper=self.mapper_get_NumberNodeLowerBound_final,
+                   reducer=self.reducer_get_NumberNodeLowerBound_final), 
+            ]
 
-# Average (and median) number of nodes reachable in two hops
+    def mapper_get_numberNodeLowerBound(self, _, line):
+        lines = line.strip().split('\t')
+        #print ('linessssssss: ', line)  
+        #for ids in lines:
+        try:
+            srcId = int(lines[0])
+            dstId = int(lines[1])
+        except:
+            #print("skipping line with value", lines)
+            pass
+        else:
+            yield dstId, srcId              #indegree
+            #yield srcId, -1                # indegree 0
+            
+            
+    def reducer_get_NumberNodeLowerBound(self, key, values):
+        yield key, len(list(values))
+        
+    def mapper_get_NumberNodeLowerBound_final(self, key, cnt):
+        if cnt > 100:
+            yield 1, key
+            
+    def reducer_get_NumberNodeLowerBound_final(self, key, cnt):
+        yield " Number of nodes with indegree > 100 : ", len(list(cnt))
+            
 
 if __name__ == '__main__':
      # 2. Number of nodes in the graph 
@@ -222,3 +296,5 @@ if __name__ == '__main__':
      #• Average (and median) number of nodes reachable in two hops [15]
      MRTwohops.run()
      
+     # • Number of nodes with indegree > 100 [10]
+     #MRNumberNodeLowerBound.run()
